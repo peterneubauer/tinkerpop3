@@ -63,6 +63,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.util.StallStep;
 import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.SideEffectHelper;
@@ -97,6 +98,10 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface GraphTraversal<S, E> extends Traversal<S, E> {
+
+    public default GraphTraversal<S,E> stall(final long stallTime) {
+        return this.addStep(new StallStep<>(this,stallTime));
+    }
 
     @Override
     public default void prepareForGraphComputer() {

@@ -438,6 +438,10 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.simplePath();
 	}
 
+	public default Neo4jTraversal<S, E> stall(long arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.stall(arg0);
+	}
+
 	public default Neo4jTraversal<S, E> store() {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.store();
 	}

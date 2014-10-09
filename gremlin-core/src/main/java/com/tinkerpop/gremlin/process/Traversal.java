@@ -230,8 +230,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public default Traversal iterate() {
         try {
+            final Step<?, E> endStep = TraversalHelper.getEnd(this); // use the end step so its bulked and not flattened
             while (true) {
-                this.next();
+                endStep.next();
             }
         } catch (final NoSuchElementException ignored) {
         }
