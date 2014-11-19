@@ -135,8 +135,8 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     @Override
     public Property<V> attach(final Graph hostGraph) {
         final Element hostElement = (this.element() instanceof Vertex) ?
-                hostGraph.v(this.element().id()) :
-                hostGraph.e(this.element().id());
+                hostGraph.iterators().vertexIterator(this.element().id()).next() :
+                hostGraph.iterators().edgeIterator(this.element().id()).next();
         final Property<V> property = hostElement.property(this.key);
         if (property.isPresent()) // && property.value().equals(this.value))
             return property;

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * BatchGraph is a wrapper that enables batch loading of a large number of edges and vertices by chunking the entire
@@ -50,7 +51,7 @@ import java.util.function.Function;
  * @author Matthias Broecheler (http://www.matthiasb.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class BatchGraph<G extends Graph> implements Graph {
+public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
     /**
      * Default buffer size is 10000.
      */
@@ -127,7 +128,7 @@ public class BatchGraph<G extends Graph> implements Graph {
         if (internal instanceof Vertex) {
             return (Vertex) internal;
         } else if (internal != null) { //its an internal id
-            final Vertex v = baseGraph.v(internal);
+            final Vertex v = baseGraph.iterators().vertexIterator(internal).next();
             cache.set(v, externalID);
             return v;
         } else return null;
@@ -178,42 +179,8 @@ public class BatchGraph<G extends Graph> implements Graph {
         return new BatchVertex(id);
     }
 
-    /**
-     * {@inheritDoc}
-     * <br/>
-     * If the input data are sorted, then out vertex will be repeated for several edges in a row.
-     * In this case, bypass cache and instead immediately return a new vertex using the known id.
-     * This gives a modest performance boost, especially when the cache is large or there are
-     * on average many edges per vertex.
-     */
     @Override
-    public Vertex v(final Object id) {
-        if ((previousOutVertexId != null) && (previousOutVertexId.equals(id)))
-            return new BatchVertex(previousOutVertexId);
-        else {
-            Vertex v = retrieveFromCache(id);
-            if (null == v) {
-                if (!incrementalLoading) return null;
-                else {
-                    final Iterator<Vertex> iter = baseGraph.V().has(vertexIdKey, id);
-                    if (!iter.hasNext()) return null;
-                    v = iter.next();
-                    if (iter.hasNext())
-                        throw new IllegalStateException("There are multiple vertices with the provided id in the database: " + id);
-                    cache.set(v, id);
-                }
-            }
-            return new BatchVertex(id);
-        }
-    }
-
-    @Override
-    public Edge e(final Object id) {
-        throw retrievalNotSupported();
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> V() {
+    public GraphTraversal<Edge, Edge> e(final Object... edgesIds) {
         throw retrievalNotSupported();
     }
 
@@ -258,9 +225,42 @@ public class BatchGraph<G extends Graph> implements Graph {
     }
 
     @Override
+    public Graph.Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+        // TODO: no
+        return (Iterator) Stream.of(vertexIds).map(id -> {
+            if (null != this.previousOutVertexId && this.previousOutVertexId.equals(id))
+                return new BatchVertex(this.previousOutVertexId);
+            else {
+                Vertex v = retrieveFromCache(id);
+                if (null == v) {
+                    if (!incrementalLoading) return null;
+                    else {
+                        final Iterator<Vertex> iter = baseGraph.V().has(vertexIdKey, id);
+                        if (!iter.hasNext()) return null;
+                        v = iter.next();
+                        if (iter.hasNext())
+                            throw new IllegalStateException("There are multiple vertices with the provided id in the database: " + id);
+                        cache.set(v, id);
+                    }
+                }
+                return new BatchVertex(id);
+            }
+        }).iterator();
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+        throw retrievalNotSupported();
+    }
+
+    @Override
     public void close() throws Exception {
         baseGraph.close();
-
         // call reset after the close in case the close behavior fails
         reset();
     }

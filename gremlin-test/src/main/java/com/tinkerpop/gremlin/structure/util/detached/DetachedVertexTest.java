@@ -97,13 +97,13 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldEvaluateToEqual() {
-        assertTrue(DetachedVertex.detach(g.v(convertToVertexId("marko"))).equals(DetachedVertex.detach(g.v(convertToVertexId("marko")))));
+        assertTrue(DetachedVertex.detach(g.v(convertToVertexId("marko")).next()).equals(DetachedVertex.detach(g.v(convertToVertexId("marko")).next())));
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldHaveSameHashCode() {
-        assertEquals(DetachedVertex.detach(g.v(convertToVertexId("marko"))).hashCode(), DetachedVertex.detach(g.v(convertToVertexId("marko"))).hashCode());
+        assertEquals(DetachedVertex.detach(g.v(convertToVertexId("marko")).next()).hashCode(), DetachedVertex.detach(g.v(convertToVertexId("marko")).next()).hashCode());
     }
 
     @Test
@@ -111,7 +111,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_INTEGER_VALUES)
     public void shouldNotEvaluateToEqualDifferentId() {
-        final DetachedVertex originalMarko = DetachedVertex.detach(g.v(convertToVertexId("marko")));
+        final DetachedVertex originalMarko = DetachedVertex.detach(g.v(convertToVertexId("marko")).next());
         final Vertex secondMarko = g.addVertex("name", "marko", "age", 29);
         assertFalse(DetachedVertex.detach(secondMarko).equals(originalMarko));
     }
@@ -236,13 +236,13 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test(expected = IllegalStateException.class)
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void shouldNotBeAbleToCallPropertyIfThereAreMultipleProperties() {
-        DetachedVertex.detach(g.v(convertToVertexId("marko"))).property("location");
+        DetachedVertex.detach(g.v(convertToVertexId("marko")).next()).property("location");
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldBeAbleToCallPropertyIfThereIsASingleProperty() {
-        final DetachedVertex dv = DetachedVertex.detach(g.v(convertToVertexId("marko")));
+        final DetachedVertex dv = DetachedVertex.detach(g.v(convertToVertexId("marko")).next());
         assertEquals("marko", dv.property("name").value());
         assertEquals(29, dv.property("age").value());
     }

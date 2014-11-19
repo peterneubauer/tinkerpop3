@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -71,10 +72,10 @@ public class GraphTest extends AbstractGremlinTest {
     @Test
     public void shouldHaveExceptionConsistencyWhenFindVertexByIdWithNull() {
         try {
-            g.v(null);
-            fail("Call to g.v(null) should throw an exception");
+            g.v(null).next();
+            fail("Call to g.v(null).next() should throw an exception");
         } catch (Exception ex) {
-            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Vertex.class, null).getClass()));
+            assertThat(ex, instanceOf(NoSuchElementException.class));
         }
 
     }
@@ -82,10 +83,10 @@ public class GraphTest extends AbstractGremlinTest {
     @Test
     public void shouldHaveExceptionConsistencyWhenFindEdgeByIdWithNull() {
         try {
-            g.e(null);
-            fail("Call to g.e(null) should throw an exception");
+            g.e(null).next();
+            fail("Call to g.e(null).next() should throw an exception");
         } catch (Exception ex) {
-            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Edge.class, null).getClass()));
+            assertThat(ex, instanceOf(NoSuchElementException.class));
         }
 
     }
@@ -93,21 +94,10 @@ public class GraphTest extends AbstractGremlinTest {
     @Test
     public void shouldHaveExceptionConsistencyWhenFindVertexByIdThatIsNonExistent() {
         try {
-            g.v(10000l);
-            fail("Call to g.v(null) should throw an exception");
+            g.v(10000l).next();
+            fail("Call to g.v(10000l).next() should throw an exception");
         } catch (Exception ex) {
-            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Vertex.class, 10000l).getClass()));
-        }
-
-    }
-
-    @Test
-    public void shouldHaveExceptionConsistencyWhenFindEdgeByIdThatIsNonExistent() {
-        try {
-            g.e(10000l);
-            fail("Call to g.e(null) should throw an exception");
-        } catch (Exception ex) {
-            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Edge.class, 10000l).getClass()));
+            assertThat(ex, instanceOf(NoSuchElementException.class));
         }
 
     }
@@ -134,7 +124,7 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldAddVertexWithUserSuppliedNumericId() {
         g.addVertex(T.id, 1000l);
         tryCommit(g, graph -> {
-            final Vertex v = g.v(1000l);
+            final Vertex v = g.v(1000l).next();
             assertEquals(1000l, v.id());
         });
     }
@@ -146,7 +136,7 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldAddVertexWithUserSuppliedStringId() {
         g.addVertex(T.id, "1000");
         tryCommit(g, graph -> {
-            final Vertex v = g.v("1000");
+            final Vertex v = g.v("1000").next();
             assertEquals("1000", v.id());
         });
     }
@@ -159,7 +149,7 @@ public class GraphTest extends AbstractGremlinTest {
         final UUID uuid = UUID.randomUUID();
         g.addVertex(T.id, uuid);
         tryCommit(g, graph -> {
-            final Vertex v = g.v(uuid);
+            final Vertex v = g.v(uuid).next();
             assertEquals(uuid, v.id());
         });
     }
@@ -172,13 +162,13 @@ public class GraphTest extends AbstractGremlinTest {
         final UUID uuid = UUID.randomUUID();
         g.addVertex(T.id, uuid);
         tryCommit(g, graph -> {
-            final Vertex v = g.v(uuid);
+            final Vertex v = g.v(uuid).next();
             assertEquals(uuid, v.id());
         });
 
         g.addVertex(T.id, uuid.toString());
         tryCommit(g, graph -> {
-            final Vertex v = g.v(uuid.toString());
+            final Vertex v = g.v(uuid.toString()).next();
             assertEquals(uuid.toString(), v.id());
         });
 
@@ -187,7 +177,7 @@ public class GraphTest extends AbstractGremlinTest {
         IoTest.CustomId customId = new IoTest.CustomId("test", uuid);
         g.addVertex(T.id, customId);
         tryCommit(g, graph -> {
-            final Vertex v = g.v(customId);
+            final Vertex v = g.v(customId).next();
             assertEquals(customId, v.id());
         });
     }
@@ -347,10 +337,10 @@ public class GraphTest extends AbstractGremlinTest {
         }
 
         if (graph.features().vertex().supportsUserSuppliedIds()) {
-            final Vertex va = graph.v(graphProvider.convertId("1"));
-            final Vertex vb = graph.v(graphProvider.convertId("2"));
-            final Vertex vc = graph.v(graphProvider.convertId("3"));
-            final Vertex vd = graph.v(graphProvider.convertId("4"));
+            final Vertex va = graph.v(graphProvider.convertId("1")).next();
+            final Vertex vb = graph.v(graphProvider.convertId("2")).next();
+            final Vertex vc = graph.v(graphProvider.convertId("3")).next();
+            final Vertex vd = graph.v(graphProvider.convertId("4")).next();
 
             assertEquals(a, va);
             assertEquals(b, vb);

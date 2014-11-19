@@ -31,8 +31,4 @@ public class EngineDependentStrategy extends AbstractTraversalStrategy implement
     public static EngineDependentStrategy instance() {
         return INSTANCE;
     }
-
-    /*public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof TraverserSourceStrategy ? -1 : 1;
-    }*/
 }

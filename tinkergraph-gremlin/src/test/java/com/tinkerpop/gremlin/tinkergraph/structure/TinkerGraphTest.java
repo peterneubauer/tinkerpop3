@@ -56,17 +56,13 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay() {
-        System.out.println((float)1l / (float)7l);
-        Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().has("name","marko").out().out().values("name");
+
+        Graph g = TinkerFactory.createClassic();
+        Traversal t = g.V().has("name","marko").out().values("name");
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);
-        System.out.println("!!!!!!!!");
-        t = g.V().has("name","marko").out().out().values("name");
-        System.out.println(t);
-        t.forEachRemaining(System.out::println);
-        System.out.println(t);
+
     }
 
     @Test
@@ -506,8 +502,8 @@ public class TinkerGraphTest {
 
         g.E().sideEffect(oe -> {
             final Edge e = oe.get();
-            final Vertex v2 = ng.v(Integer.parseInt(e.inV().next().id().toString()));
-            final Vertex v1 = ng.v(Integer.parseInt(e.outV().next().id().toString()));
+            final Vertex v2 = ng.v(Integer.parseInt(e.inV().next().id().toString())).next();
+            final Vertex v1 = ng.v(Integer.parseInt(e.outV().next().id().toString())).next();
 
             if (e.label().equals("followedBy"))
                 v1.addEdge("followedBy", v2, T.id, Integer.parseInt(e.id().toString()), "weight", e.value("weight"));

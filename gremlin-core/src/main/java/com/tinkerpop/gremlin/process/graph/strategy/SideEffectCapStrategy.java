@@ -7,8 +7,9 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -16,11 +17,7 @@ import java.util.Set;
 public class SideEffectCapStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final SideEffectCapStrategy INSTANCE = new SideEffectCapStrategy();
-    private static final Set<Class<? extends TraversalStrategy>> POSTS = new HashSet<>();
-
-    static {
-        POSTS.add(LabeledEndStepStrategy.class);
-    }
+    private static final Set<Class<? extends TraversalStrategy>> POSTS = Stream.of(LabeledEndStepStrategy.class).collect(Collectors.toSet());
 
     private SideEffectCapStrategy() {
     }

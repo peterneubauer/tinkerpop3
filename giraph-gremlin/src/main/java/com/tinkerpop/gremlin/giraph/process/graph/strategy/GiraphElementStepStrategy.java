@@ -1,14 +1,13 @@
 package com.tinkerpop.gremlin.giraph.process.graph.strategy;
 
-import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
 import com.tinkerpop.gremlin.giraph.structure.GiraphElement;
-import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.strategy.AbstractTraversalStrategy;
@@ -51,7 +50,7 @@ public class GiraphElementStepStrategy extends AbstractTraversalStrategy {
                 TraversalHelper.insertStep(identityStep, 0, traversal);
             }
             TraversalHelper.insertStep(new HasStep(traversal, new HasContainer(T.id, Compare.eq, element.id())), 0, traversal);
-            TraversalHelper.insertStep(new GiraphGraphStep<>(traversal, element.getClass(), (GiraphGraph) element.graph()), 0, traversal);
+            TraversalHelper.insertStep(new GraphStep<>(traversal, element.getClass()), 0, traversal);
         }
     }
 

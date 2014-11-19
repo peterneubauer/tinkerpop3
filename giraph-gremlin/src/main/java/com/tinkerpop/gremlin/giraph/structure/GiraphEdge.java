@@ -46,11 +46,11 @@ public class GiraphEdge extends GiraphElement implements Edge, Edge.Iterators, W
     public Iterator<Vertex> vertexIterator(final Direction direction) {
         switch (direction) {
             case OUT:
-                return new SingleIterator<>(this.graph.v(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id()));
+                return new SingleIterator<>(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id()).next());
             case IN:
-                return new SingleIterator<>(this.graph.v(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id()));
+                return new SingleIterator<>(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id()).next());
             default:
-                return new DoubleIterator<>(this.graph.v(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id()), this.graph.v(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id()));
+                return new DoubleIterator<>(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id()).next(), this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id()).next());
         }
     }
 

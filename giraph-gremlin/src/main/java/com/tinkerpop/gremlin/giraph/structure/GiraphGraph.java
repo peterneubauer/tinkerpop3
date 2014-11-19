@@ -1,28 +1,28 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
 import com.tinkerpop.gremlin.giraph.Constants;
+import com.tinkerpop.gremlin.giraph.hdfs.GiraphEdgeIterator;
+import com.tinkerpop.gremlin.giraph.hdfs.GiraphVertexIterator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
-import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.process.graph.strategy.GraphTraversalStrategyRegistry;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerElementStepStrategy;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexOutputFormat;
 
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.Optional;
 
 /**
@@ -80,7 +80,7 @@ import java.util.Optional;
         test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldNotAllowSettingUndeclaredMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-public class GiraphGraph implements Graph {
+public class GiraphGraph implements Graph, Graph.Iterators {
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, GiraphGraph.class.getName());
@@ -103,23 +103,6 @@ public class GiraphGraph implements Graph {
         return new GiraphGraph(Optional.ofNullable(configuration).orElse(EMPTY_CONFIGURATION));
     }
 
-    @Override
-    public GraphTraversal<Vertex, Vertex> V() {
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.addStep(new GiraphGraphStep<>(traversal, Vertex.class, this));
-    }
-
-    @Override
-    public GraphTraversal<Edge, Edge> E() {
-        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.addStep(new GiraphGraphStep<>(traversal, Edge.class, this));
-    }
-
-    @Override
-    public <S> GraphTraversal<S, S> of() {
-        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.addStep(new StartStep<>(traversal));
-    }
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
@@ -144,6 +127,29 @@ public class GiraphGraph implements Graph {
     @Override
     public GiraphConfiguration configuration() {
         return this.configuration;
+    }
+
+    @Override
+    public Graph.Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+        try {
+            return (Iterator) new GiraphVertexIterator(this);
+        } catch (final IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+        try {
+            return (Iterator) new GiraphEdgeIterator(this);
+        } catch (final IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     public String toString() {

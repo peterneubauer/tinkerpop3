@@ -95,17 +95,15 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldThrowExceptionOnvInDifferentPartition() {
         final Vertex vA = g.addVertex("any", "a");
-        assertEquals(vA.id(), g.v(vA.id()).id());
+        assertEquals(vA.id(), g.v(vA.id()).id().next());
 
         final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
         strategy.clearReadPartitions();
 
         try {
-            g.v(vA.id());
+            g.v(vA.id()).next();
         } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.elementNotFound(Vertex.class, vA.id());
-            assertEquals(expected.getClass(), ex.getClass());
-            assertEquals(expected.getMessage(), ex.getMessage());
+            assertTrue(ex instanceof NoSuchElementException);
         }
     }
 
@@ -114,17 +112,15 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     public void shouldThrowExceptionOneInDifferentPartition() {
         final Vertex vA = g.addVertex("any", "a");
         final Edge e = vA.addEdge("knows", vA);
-        assertEquals(e.id(), g.e(e.id()).id());
+        assertEquals(e.id(), g.e(e.id()).id().next());
 
         final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
         strategy.clearReadPartitions();
 
         try {
-            g.e(e.id());
+            g.e(e.id()).next();
         } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.elementNotFound(Edge.class, e.id());
-            assertEquals(expected.getClass(), ex.getClass());
-            assertEquals(expected.getMessage(), ex.getMessage());
+            assertTrue(ex instanceof NoSuchElementException);
         }
     }
 

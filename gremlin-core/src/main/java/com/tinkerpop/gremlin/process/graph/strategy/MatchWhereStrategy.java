@@ -14,6 +14,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -21,11 +23,7 @@ import java.util.Set;
 public class MatchWhereStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final MatchWhereStrategy INSTANCE = new MatchWhereStrategy();
-    private static final Set<Class<? extends TraversalStrategy>> PRIORS = new HashSet<>();
-
-    static {
-        PRIORS.add(IdentityRemovalStrategy.class);
-    }
+    private static final Set<Class<? extends TraversalStrategy>> PRIORS = Stream.of(IdentityRemovalStrategy.class).collect(Collectors.toSet());
 
     private MatchWhereStrategy() {
     }
@@ -59,11 +57,6 @@ public class MatchWhereStrategy extends AbstractTraversalStrategy implements Tra
     public static MatchWhereStrategy instance() {
         return INSTANCE;
     }
-
-
-    /*public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof IdentityRemovalStrategy ? 1 : 0;
-    }*/
 
     @Override
     public Set<Class<? extends TraversalStrategy>> applyPrior() {

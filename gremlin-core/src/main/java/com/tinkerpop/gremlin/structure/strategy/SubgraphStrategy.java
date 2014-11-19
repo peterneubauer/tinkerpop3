@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -38,27 +37,13 @@ public class SubgraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> (id) -> {
-            final Vertex v = f.apply(id);
-            if (!this.testVertex(v)) {
-                throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-            }
-            return v;
-        };
+    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return (f) -> (vertexIds) -> f.apply(vertexIds).filter(vertex -> this.testVertex(vertex.get()));   // TODO: we should make sure index hits go first.
     }
 
     @Override
-    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> (id) -> {
-            final Edge e = f.apply(id);
-
-            if (!this.testEdge(e)) {
-                throw Graph.Exceptions.elementNotFound(Edge.class, id);
-            }
-
-            return e;
-        };
+    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return (f) -> (edgeIds) -> f.apply(edgeIds).filter(edge -> this.testEdge(edge.get()));   // TODO: we should make sure index hits go first.
     }
 
     @Override

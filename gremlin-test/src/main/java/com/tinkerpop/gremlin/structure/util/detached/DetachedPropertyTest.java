@@ -37,7 +37,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldConstructDetachedPropertyWithPropertyFromEdge() {
-        final DetachedProperty p = DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).property("weight"));
+        final DetachedProperty p = DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).next().property("weight"));
         assertEquals("weight", p.key());
         assertEquals(0.4d, (double) p.value(), 0.000001d);
         assertEquals(DetachedEdge.class, p.element().getClass());
@@ -47,19 +47,19 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
     @Test(expected = UnsupportedOperationException.class)
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldNotSupportRemove() {
-        DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).property("weight")).remove();
+        DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).next().property("weight")).remove();
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldBeEqualProperties() {
-       assertTrue(DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).property("weight")).equals(DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).property("weight"))));
+       assertTrue(DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).next().property("weight")).equals(DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).next().property("weight"))));
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldNotBeEqualPropertiesAsThereIsDifferentId() {
-        assertFalse(DetachedProperty.detach(g.e(convertToEdgeId("marko", "created", "lop")).property("weight")).equals(DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).property("weight"))));
+        assertFalse(DetachedProperty.detach(g.e(convertToEdgeId("marko", "created", "lop")).next().property("weight")).equals(DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).next().property("weight"))));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldNotBeEqualPropertiesAsThereIsDifferentKey() {
         final Object joshCreatedLopEdgeId = convertToEdgeId("josh", "created", "lop");
-        final Edge e = g.v(convertToVertexId("josh")).addEdge("created", g.v(convertToVertexId("lop")), Graph.Key.hide("weight"), 0.4d);
-        assertFalse(DetachedProperty.detach(e.property(Graph.Key.hide("weight"))).equals(DetachedProperty.detach(g.e(joshCreatedLopEdgeId).property("weight"))));
+        final Edge e = g.v(convertToVertexId("josh")).next().addEdge("created", g.v(convertToVertexId("lop")).next(), Graph.Key.hide("weight"), 0.4d);
+        assertFalse(DetachedProperty.detach(e.property(Graph.Key.hide("weight"))).equals(DetachedProperty.detach(g.e(joshCreatedLopEdgeId).next().property("weight"))));
     }
 }

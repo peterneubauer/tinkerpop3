@@ -46,7 +46,7 @@ public class ReferencedVertex extends ReferencedElement implements Vertex, Verte
 
     @Override
     public Vertex attach(final Graph hostGraph) {
-        return hostGraph.v(this.id());
+        return hostGraph.iterators().vertexIterator(this.id()).next();
     }
 
     @Override

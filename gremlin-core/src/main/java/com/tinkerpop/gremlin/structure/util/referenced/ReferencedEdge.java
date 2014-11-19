@@ -39,7 +39,7 @@ public class ReferencedEdge extends ReferencedElement implements Edge, Edge.Iter
 
     @Override
     public Edge attach(final Graph hostGraph) {
-        return hostGraph.e(this.id());
+        return hostGraph.iterators().edgeIterator(this.id()).next();
     }
 
     @Override

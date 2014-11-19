@@ -294,7 +294,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.getStrategy().setGraphStrategy(strategyToTest);
 
-        sg.v(convertToVertexId("marko"));
+        sg.v(convertToVertexId("marko")).next();
     }
 
     @Test(expected = NoSuchElementException.class)
@@ -318,6 +318,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.getStrategy().setGraphStrategy(strategyToTest);
 
-        sg.e(sg.e(convertToEdgeId("marko", "knows", "vadas")));
+        sg.e(convertToEdgeId("marko", "knows", "vadas")).next();
+        //sg.e(sg.e(convertToEdgeId("marko", "knows", "vadas")).next()).next();
     }
 }

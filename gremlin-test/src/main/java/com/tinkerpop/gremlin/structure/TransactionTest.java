@@ -9,6 +9,7 @@ import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -165,31 +166,31 @@ public class TransactionTest extends AbstractGremlinTest {
 
         v1.property("name", "marko");
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.v(v1.id()).<String>value("name"));
+        assertEquals("marko", g.v(v1.id()).next().<String>value("name"));
         g.tx().commit();
 
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.v(v1.id()).<String>value("name"));
+        assertEquals("marko", g.v(v1.id()).next().<String>value("name"));
 
         v1.singleProperty("name", "stephen");
 
         assertEquals("stephen", v1.<String>value("name"));
-        assertEquals("stephen", g.v(v1.id()).<String>value("name"));
+        assertEquals("stephen", g.v(v1.id()).next().<String>value("name"));
 
         g.tx().commit();
 
         assertEquals("stephen", v1.<String>value("name"));
-        assertEquals("stephen", g.v(v1.id()).<String>value("name"));
+        assertEquals("stephen", g.v(v1.id()).next().<String>value("name"));
 
         e1.property("name", "xxx");
 
         assertEquals("xxx", e1.<String>value("name"));
-        assertEquals("xxx", g.e(e1.id()).<String>value("name"));
+        assertEquals("xxx", g.e(e1.id()).next().<String>value("name"));
 
         g.tx().commit();
 
         assertEquals("xxx", e1.<String>value("name"));
-        assertEquals("xxx", g.e(e1.id()).<String>value("name"));
+        assertEquals("xxx", g.e(e1.id()).next().<String>value("name"));
 
         assertVertexEdgeCounts(1, 1);
         assertEquals(v1.id(), g.v(v1.id()).id());
@@ -210,27 +211,27 @@ public class TransactionTest extends AbstractGremlinTest {
         g.tx().commit();
 
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.v(v1.id()).<String>value("name"));
+        assertEquals("marko", g.v(v1.id()).next().<String>value("name"));
 
         v1.singleProperty("name", "stephen");
 
         assertEquals("stephen", v1.<String>value("name"));
-        assertEquals("stephen", g.v(v1.id()).<String>value("name"));
+        assertEquals("stephen", g.v(v1.id()).next().<String>value("name"));
 
         g.tx().rollback();
 
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.v(v1.id()).<String>value("name"));
+        assertEquals("marko", g.v(v1.id()).next().<String>value("name"));
 
         e1.property("name", "yyy");
 
         assertEquals("yyy", e1.<String>value("name"));
-        assertEquals("yyy", g.e(e1.id()).<String>value("name"));
+        assertEquals("yyy", g.e(e1.id()).next().<String>value("name"));
 
         g.tx().rollback();
 
         assertEquals("xxx", e1.<String>value("name"));
-        assertEquals("xxx", g.e(e1.id()).<String>value("name"));
+        assertEquals("xxx", g.e(e1.id()).next().<String>value("name"));
 
         assertVertexEdgeCounts(1, 1);
     }
@@ -244,7 +245,7 @@ public class TransactionTest extends AbstractGremlinTest {
         g.close();
 
         g = graphProvider.openTestGraph(config);
-        final Vertex v2 = g.v(oid);
+        final Vertex v2 = g.v(oid).next();
         assertEquals("marko", v2.<String>value("name"));
     }
 
@@ -259,10 +260,10 @@ public class TransactionTest extends AbstractGremlinTest {
 
         g = graphProvider.openTestGraph(config);
         try {
-            g.v(oid);
+            g.v(oid).next();
             fail("Vertex should not be found as close behavior was set to rollback");
         } catch (Exception ex) {
-            validateException(Graph.Exceptions.elementNotFound(Vertex.class, oid), ex);
+            validateException(new NoSuchElementException(), ex);
         }
     }
 
@@ -625,7 +626,7 @@ public class TransactionTest extends AbstractGremlinTest {
         assertVertexEdgeCounts(1, 0);
 
         final Vertex v2 = graph.addVertex();
-        v1 = graph.v(v1.id());
+        v1 = graph.v(v1.id()).next();
         v1.addEdge("friend", v2);
 
         assertVertexEdgeCounts(2, 1);

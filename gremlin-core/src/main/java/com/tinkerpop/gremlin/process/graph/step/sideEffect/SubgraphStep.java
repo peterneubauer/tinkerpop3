@@ -76,7 +76,7 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
         Vertex foundVertex = null;
         if (this.subgraphSupportsUserIds) {
             try {
-                foundVertex = this.subgraph.v(vertex.id());
+                foundVertex = this.subgraph.iterators().vertexIterator(vertex.id()).next();
             } catch (final NoSuchElementException e) {
                 // do nothing;
             }

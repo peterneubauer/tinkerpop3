@@ -114,12 +114,6 @@ public class VertexTest {
             }
         }
 
-        @Test(expected = NoSuchElementException.class)
-        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresent() {
-            g.v("this-id-should-not-be-in-the-modern-graph");
-        }
-
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
@@ -228,7 +222,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
             final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
-            final Vertex u = g.v(GraphManager.get().convertId("1"));
+            final Vertex u = g.v(GraphManager.get().convertId("1")).next();
             assertEquals(v, u);
         }
 
@@ -238,7 +232,7 @@ public class VertexTest {
             final Vertex v = g.addVertex();
             assertNotNull(v);
 
-            final Vertex u = g.v(v.id());
+            final Vertex u = g.v(v.id()).next();
             assertNotNull(u);
             assertEquals(v, u);
 
@@ -252,7 +246,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
             final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
-            final Vertex u = g.v(GraphManager.get().convertId("1"));
+            final Vertex u = g.v(GraphManager.get().convertId("1")).next();
             assertEquals(v, u);
 
             final Set<Vertex> set = new HashSet<>();
@@ -260,8 +254,8 @@ public class VertexTest {
             set.add(v);
             set.add(u);
             set.add(u);
-            set.add(g.v(GraphManager.get().convertId("1")));
-            set.add(g.v(GraphManager.get().convertId("1")));
+            set.add(g.v(GraphManager.get().convertId("1")).next());
+            set.add(g.v(GraphManager.get().convertId("1")).next());
 
             assertEquals(1, set.size());
             assertEquals(v.hashCode(), u.hashCode());

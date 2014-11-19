@@ -4,6 +4,9 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -15,7 +18,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -139,36 +144,38 @@ public interface Graph extends AutoCloseable {
     }
 
     /**
-     * Get a {@link Vertex} given its unique identifier.
+     * Get a {@link GraphTraversal} of vertices with specified ids.
      *
-     * @param id The unique identifier of the vertex to locate
-     * @throws NoSuchElementException if the vertex is not found.
+     * @param vertexIds The unique identifier of the vertices to locate
      */
-    public default Vertex v(final Object id) throws NoSuchElementException {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
-        return (Vertex) this.V().has(T.id, id).next();
+    public default GraphTraversal<Vertex, Vertex> v(final Object... vertexIds) {
+        return this.V().has(T.id, Contains.within, Arrays.asList(vertexIds));
     }
 
     /**
-     * Get a {@link Edge} given its unique identifier.
+     * Get a {@link GraphTraversal} of edges with specified ids.
      *
-     * @param id The unique identifier of the edge to locate
-     * @throws NoSuchElementException if the edge is not found.
+     * @param edgeIds The unique identifier of the edges to locate
      */
-    public default Edge e(final Object id) throws NoSuchElementException {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, null);
-        return (Edge) this.E().has(T.id, id).next();
+    public default GraphTraversal<Edge, Edge> e(final Object... edgeIds) {
+        return this.E().has(T.id, Contains.within, Arrays.asList(edgeIds));
     }
 
     /**
      * Starts a {@link GraphTraversal} over all vertices in the graph.
      */
-    public GraphTraversal<Vertex, Vertex> V();
+    public default GraphTraversal<Vertex, Vertex> V() {
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
+        return traversal.addStep(new GraphStep<>(traversal, Vertex.class));
+    }
 
     /**
      * Starts a {@link GraphTraversal} over all edges in the graph.
      */
-    public GraphTraversal<Edge, Edge> E();
+    public default GraphTraversal<Edge, Edge> E() {
+        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
+        return traversal.addStep(new GraphStep<>(traversal, Edge.class));
+    }
 
     /**
      * Constructs a new domain specific {@link Traversal} for this graph.
@@ -190,7 +197,8 @@ public interface Graph extends AutoCloseable {
      * @return The newly constructed GraphTraversal bound to this graph
      */
     public default <S> GraphTraversal<S, S> of() {
-        return GraphTraversal.of(this);
+        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>(this);
+        return traversal.addStep(new StartStep<>(traversal));
     }
 
     /**
@@ -224,6 +232,16 @@ public interface Graph extends AutoCloseable {
      * @return the configuration used during graph construction.
      */
     public Configuration configuration();
+
+
+    public Graph.Iterators iterators();
+
+    public interface Iterators {
+
+        public Iterator<Vertex> vertexIterator(final Object... vertexIds);
+
+        public Iterator<Edge> edgeIterator(final Object... edgeIds);
+    }
 
     /**
      * Graph variables are a set of key/value pairs associated with the graph.
@@ -907,12 +925,6 @@ public interface Graph extends AutoCloseable {
 
         public static IllegalArgumentException argumentCanNotBeNull(final String argument) {
             return new IllegalArgumentException(String.format("The provided argument can not be null: %s", argument));
-        }
-
-        public static NoSuchElementException elementNotFound(final Class<? extends Element> elementClass, final Object id) {
-            return (null == id) ?
-                    new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph") :
-                    new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
         }
 
         public static IllegalArgumentException onlyOneOrNoGraphComputerClass() {

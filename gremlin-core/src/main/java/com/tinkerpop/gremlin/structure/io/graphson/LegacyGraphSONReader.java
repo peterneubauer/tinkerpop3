@@ -80,8 +80,8 @@ public class LegacyGraphSONReader implements GraphReader {
                         parser.nextToken();
                         while (parser.nextToken() != JsonToken.END_ARRAY) {
                             final JsonNode node = parser.readValueAsTree();
-                            final Vertex inV = graph.v(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V)));
-                            final Vertex outV = graph.v(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V)));
+                            final Vertex inV = graph.iterators().vertexIterator(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V))).next();
+                            final Vertex outV = graph.iterators().vertexIterator(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V))).next();
                             graphson.edgeFromJson(node, outV, inV);
                         }
                         break;

@@ -73,6 +73,11 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
+    public Graph.Iterators iterators() {
+        throw new IllegalStateException(MESSAGE);
+    }
+
+    @Override
     public void close() throws Exception {
         throw new IllegalStateException(MESSAGE);
     }

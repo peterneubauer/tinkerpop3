@@ -557,10 +557,10 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
-     * {@link com.tinkerpop.gremlin.structure.Graph#v(Object)} signature
+     * {@link com.tinkerpop.gremlin.structure.Graph#v} signature
      * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
-    public default UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+    public default UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -569,10 +569,10 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
-     * {@link com.tinkerpop.gremlin.structure.Graph#e(Object)} signature
+     * {@link com.tinkerpop.gremlin.structure.Graph#e} signature
      * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
-    public default UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+    public default UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -589,6 +589,30 @@ public interface GraphStrategy {
     }
 
     /**
+     * Construct a {@link Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Iterators#vertexIterator}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link  Function} with
+     * {@link com.tinkerpop.gremlin.structure.Graph.Iterators#vertexIterator} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
+     * Construct a {@link Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Iterators#edgeIterator}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link Function} with
+     * {@link com.tinkerpop.gremlin.structure.Graph.Iterators#edgeIterator} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty#element}.
      *
      * @param ctx the context within which this strategy function is called
@@ -600,11 +624,11 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
-    public default UnaryOperator<Supplier<GraphTraversal<Vertex,Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+    public default UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
     }
 
-    public default UnaryOperator<Supplier<GraphTraversal<Edge,Edge>>> getGraphEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+    public default UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getGraphEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
     }
 

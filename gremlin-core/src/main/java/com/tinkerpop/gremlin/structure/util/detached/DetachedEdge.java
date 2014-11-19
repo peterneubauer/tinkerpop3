@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 /**
@@ -83,7 +82,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
 
     @Override
     public Edge attach(final Graph hostGraph) {
-        return hostGraph.e(this.id);
+        return hostGraph.iterators().edgeIterator(this.id).next();
     }
 
     public static DetachedEdge detach(final Edge edge) {
@@ -96,30 +95,15 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
     }
 
     public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
-        Vertex outV;
-        try {
-            outV = graph.v(detachedEdge.outVertex.id());
-        } catch (final NoSuchElementException e) {
-            outV = null;
-        }
-        if (null == outV) {
-            outV = graph.addVertex(T.id, detachedEdge.outVertex.id());
-        }
-
-        Vertex inV;
-        try {
-            inV = graph.v(detachedEdge.inVertex.id());
-        } catch (final NoSuchElementException e) {
-            inV = null;
-        }
-        if (null == inV) {
-            inV = graph.addVertex(T.id, detachedEdge.inVertex.id());
-        }
+        Iterator<Vertex> itty = graph.iterators().vertexIterator(detachedEdge.outVertex.id());
+        Vertex outV = itty.hasNext() ? itty.next() : graph.addVertex(T.id, detachedEdge.outVertex.id());
+        itty = graph.iterators().vertexIterator(detachedEdge.inVertex.id());
+        Vertex inV = itty.hasNext() ? itty.next() : graph.addVertex(T.id, detachedEdge.inVertex.id());
 
         if (ElementHelper.areEqual(outV, inV)) {
-            final Iterator<Edge> itty = outV.iterators().edgeIterator(Direction.OUT, detachedEdge.label());
-            while (itty.hasNext()) {
-                final Edge e = itty.next();
+            final Iterator<Edge> edges = outV.iterators().edgeIterator(Direction.OUT, detachedEdge.label());
+            while (edges.hasNext()) {
+                final Edge e = edges.next();
                 if (ElementHelper.areEqual(detachedEdge, e))
                     return e;
             }

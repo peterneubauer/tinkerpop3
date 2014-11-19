@@ -468,12 +468,12 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
             return spy();
         }
 
@@ -514,6 +514,16 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 
         @Override
         public UnaryOperator<Supplier<Void>> getGraphCloseStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+            return spy();
+        }
+
+        @Override
+        public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+            return spy();
+        }
+
+        @Override
+        public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
             return spy();
         }
 

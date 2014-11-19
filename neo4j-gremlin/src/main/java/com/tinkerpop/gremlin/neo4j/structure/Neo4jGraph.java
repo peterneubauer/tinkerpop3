@@ -19,9 +19,6 @@ import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
-import org.neo4j.graphdb.NotInTransactionException;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
 import org.neo4j.graphdb.schema.Schema;
@@ -31,10 +28,12 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -42,7 +41,7 @@ import java.util.function.Function;
  */
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
-public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
+public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDatabaseService> {
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, Neo4jGraph.class.getName());
@@ -195,41 +194,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     }
 
     @Override
-    public Vertex v(final Object id) {
-        this.tx().readWrite();
-        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-
-        try {
-            final Node node = this.baseGraph.getNodeById(evaluateToLong(id));
-            if (!node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
-                return new Neo4jVertex(node, this);
-        } catch (final NotFoundException e) {
-            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        } catch (final NumberFormatException e) {
-            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        } catch (final NotInTransactionException e) {
-            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        }
-        throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-    }
-
-    @Override
-    public Edge e(final Object id) {
-        this.tx().readWrite();
-        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, id);
-
-        try {
-            return new Neo4jEdge(this.baseGraph.getRelationshipById(evaluateToLong(id)), this);
-        } catch (final NotFoundException e) {
-            throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        } catch (final NumberFormatException e) {
-            throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        } catch (final NotInTransactionException e) {
-            throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        }
-    }
-
-    @Override
     public <S> Neo4jTraversal<S, S> of() {
         final Neo4jTraversal<S, S> traversal = Neo4jTraversal.of(this);
         traversal.addStep(new StartStep<>(traversal));
@@ -254,6 +218,47 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     @Override
     public Configuration configuration() {
         return this.configuration;
+    }
+
+    @Override
+    public Graph.Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+        this.tx().readWrite();
+        return (Iterator) Stream.of(vertexIds)
+                .map(Neo4jGraph::evaluateToLong)
+                .map(this.baseGraph::getNodeById)
+                .filter(node -> node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
+                .map(node -> new Neo4jVertex(node, this))
+                .iterator();
+
+        /*try {
+            final Node node = this.baseGraph.getNodeById(evaluateToLong(id));
+            if (!node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
+                return new Neo4jVertex(node, this);
+        } catch (final NotFoundException e) {
+            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
+        } catch (final NumberFormatException e) {
+            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
+        } catch (final NotInTransactionException e) {
+            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
+        }
+        throw Graph.Exceptions.elementNotFound(Vertex.class, id); */
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+        this.tx().readWrite();
+        return (Iterator) Stream.of(edgeIds)
+                .map(Neo4jGraph::evaluateToLong)
+                .map(this.baseGraph::getRelationshipById)
+                        //.filter(relationship -> relationship.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
+                .map(relationship -> new Neo4jEdge(relationship, this))
+                .iterator();
+
     }
 
     /**

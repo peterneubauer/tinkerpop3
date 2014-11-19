@@ -197,7 +197,7 @@ public class IoTest extends AbstractGremlinTest {
             r.readGraph(in, g2);
         }
 
-        final Vertex v2 = g2.v("1");
+        final Vertex v2 = g2.v("1").next();
         assertEquals("\u00E9", v2.property("text").value());
 
         // need to manually close the "g2" instance

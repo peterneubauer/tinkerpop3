@@ -17,9 +17,12 @@ import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerTraversal;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * An in-sideEffects, reference implementation of the property graph interfaces provided by Gremlin3.
@@ -35,7 +38,7 @@ import java.util.Set;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
-public class TinkerGraph implements Graph {
+public class TinkerGraph implements Graph, Graph.Iterators {
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, TinkerGraph.class.getName());
@@ -91,26 +94,6 @@ public class TinkerGraph implements Graph {
     ////////////// STRUCTURE API METHODS //////////////////
 
     @Override
-    public Vertex v(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
-        final Vertex vertex = this.vertices.get(id);
-        if (null == vertex)
-            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        else
-            return vertex;
-    }
-
-    @Override
-    public Edge e(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, null);
-        final Edge edge = this.edges.get(id);
-        if (null == edge)
-            throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        else
-            return edge;
-    }
-
-    @Override
     public GraphTraversal<Vertex, Vertex> V() {
         return new TinkerGraphTraversal<>(Vertex.class, this);
     }
@@ -158,6 +141,28 @@ public class TinkerGraph implements Graph {
     public Variables variables() {
         return this.variables;
     }
+
+    @Override
+    public Graph.Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+        if (null == vertexIds) return Collections.emptyIterator();
+        return 0 == vertexIds.length ?
+                this.vertices.values().iterator() :
+                Stream.of(vertexIds).filter(this.vertices::containsKey).map(this.vertices::get).iterator();
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+        if (null == edgeIds) return Collections.emptyIterator();
+        return 0 == edgeIds.length ?
+                this.edges.values().iterator() :
+                Stream.of(edgeIds).filter(this.edges::containsKey).map(this.edges::get).iterator();
+    }
+
 
     public String toString() {
         return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());

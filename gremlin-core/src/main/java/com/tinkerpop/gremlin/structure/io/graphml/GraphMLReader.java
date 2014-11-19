@@ -134,11 +134,10 @@ public class GraphMLReader implements GraphReader {
                             // graphml allows edges and vertices to be mixed in terms of how they are positioned
                             // in the xml therefore it is possible that an edge is created prior to its definition
                             // as a vertex.
-                            edgeOutVertex = Optional.ofNullable(graph.v(vertexIdOut))
-                                    .orElseGet(() -> graph.addVertex(T.id, vertexIdOut));
-                            edgeInVertex = Optional.ofNullable(graph.v(vertexIdIn))
-                                    .orElseGet(() -> graph.addVertex(T.id, vertexIdIn));
-
+                            Iterator<Vertex> itty = graph.iterators().vertexIterator(vertexIdOut);
+                            edgeOutVertex = itty.hasNext() ? itty.next() : graph.addVertex(T.id, vertexIdOut);
+                            itty = graph.iterators().vertexIterator(vertexIdIn);
+                            edgeInVertex = itty.hasNext() ? itty.next() : graph.addVertex(T.id, vertexIdIn);
                             isInEdge = true;
                             edgeProps = new HashMap<>();
 

@@ -84,12 +84,6 @@ public class EdgeTest {
             }
         }
 
-        @Test(expected = NoSuchElementException.class)
-        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldThrowNoSuchElementExceptionIfEdgeWithIdNotPresent() {
-            g.e("this-id-should-not-be-in-the-modern-graph");
-        }
-
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
