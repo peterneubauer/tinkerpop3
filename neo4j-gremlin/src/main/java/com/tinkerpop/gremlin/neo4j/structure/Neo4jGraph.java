@@ -27,9 +27,6 @@ import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.kernel.GraphDatabaseAPI;
 
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -64,13 +61,11 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     protected final boolean supportsMetaProperties;
     protected final boolean supportsMultiProperties;
 
-    protected final TransactionManager transactionManager;
     protected final ExecutionEngine cypher;
 
     private Neo4jGraph(final GraphDatabaseService baseGraph) {
         this.configuration.copy(EMPTY_CONFIGURATION);
         this.baseGraph = baseGraph;
-        this.transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
         this.cypher = new ExecutionEngine(this.baseGraph);
         this.neo4jGraphVariables = new Neo4jGraphVariables(this);
 
@@ -109,7 +104,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
                     new HighlyAvailableGraphDatabaseFactory().newHighlyAvailableDatabaseBuilder(directory).setConfig(neo4jSpecificConfig).newGraphDatabase() :
                     new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(directory).
                             setConfig(neo4jSpecificConfig).newGraphDatabase();
-            this.transactionManager = ((GraphDatabaseAPI) this.baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
             this.cypher = new ExecutionEngine(this.baseGraph);
             this.neo4jGraphVariables = new Neo4jGraphVariables(this);
             ///////////
@@ -364,18 +358,18 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             if (!isOpen())
                 return;
 
-            try {
-                javax.transaction.Transaction t = transactionManager.getTransaction();
-                if (null == t || t.getStatus() == Status.STATUS_ROLLEDBACK)
-                    return;
-
-                threadLocalTx.get().failure();
-            } catch (SystemException e) {
-                throw new RuntimeException(e);
-            } finally {
-                threadLocalTx.get().close();
-                threadLocalTx.remove();
-            }
+//            try {
+//                javax.transaction.Transaction t = transactionManager.getTransaction();
+//                if (null == t || t.getStatus() == Status.STATUS_ROLLEDBACK)
+//                    return;
+//
+//                threadLocalTx.get().failure();
+//            } catch (SystemException e) {
+//                throw new RuntimeException(e);
+//            } finally {
+//                threadLocalTx.get().close();
+//                threadLocalTx.remove();
+//            }
         }
 
         @Override
